@@ -1,0 +1,391 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 1.5rem;
+  background: var(--color-bg);
+}
+
+.card {
+  padding: 2rem 2rem 2.2rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  width: 35vw;
+}
+
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  width: 100%;
+  position: relative;
+}
+
+.stepWrapper {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  position: relative;
+}
+
+.stepWrapper:last-child {
+  flex: 0 0 auto;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 2;
+  background: var(--color-surface);
+  padding: 0 4px;
+}
+
+.stepCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 2px solid var(--color-border);
+  transition: var(--transition);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.stepCircle.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.stepLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stepLine {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 4px;
+  align-self: center;
+  margin-bottom: 24px;
+  transition: var(--transition);
+  min-width: 20px;
+}
+
+.stepLine.activeLine {
+  background: var(--color-primary);
+}
+
+.stepContent {
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stepHeader {
+  margin-bottom: 1.8rem;
+}
+
+.stepTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: #28166f;
+}
+
+.stepSubtitle {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-bottom: 1em;
+}
+
+.formGroup {
+  margin: 0 1em 1em 0;
+}
+
+.formLabel {
+  display: block;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  color: var(--color-text);
+}
+
+.formHint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0.3rem 0 0;
+}
+
+.loginLink {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-top: 1.5rem;
+}
+
+.loginLink a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.loginLink a:hover {
+  text-decoration: underline;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding-right: 36px;
+}
+
+.icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  border: 2px solid var(--color-success);
+}
+
+.successIcon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-success);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: var(--color-text);
+}
+
+.message {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.statusItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.statusLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.statusValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.statusPending {
+  color: var(--color-warning);
+}
+
+.actionRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.primaryBtn {
+  flex: 2;
+}
+
+.secondaryBtn {
+  flex: 1;
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.secondaryBtn:hover {
+  background: var(--color-surface-muted);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1.5rem;
+  }
+
+  .statusGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+.dropZone {
+  position: relative;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1.8rem 1rem;
+  margin-bottom: 1em;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--color-surface-muted);
+}
+
+.dropZone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.dropZoneContent {
+  pointer-events: none;
+}
+
+.dropZoneContent span {
+  font-size: 2rem;
+  display: block;
+}
+
+.dropZoneContent p {
+  margin: 0.4rem 0 0.2rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.dropHint {
+  font-size: 1em;
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5em;
+  text-align: center;
+  transition: var(--transition);
+  background: var(--color-surface-muted);
+}
+
+.dropZoneInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.backBtn {
+  width: 10vw;
+}
+
+.actionRow .button-primary {
+  flex: 2;
+}
+
+.codeInputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.codeDigit {
+  width: 60px;
+  height: 54px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+.resendRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-top: 1.25rem;
+}
+
+.resendBtn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.resendBtn:hover {
+  text-decoration: underline;
+}
