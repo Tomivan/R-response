@@ -1,0 +1,206 @@
+.container {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding: 2rem;
+}
+
+.link {
+    text-decoration: none;
+    color: #28166f;
+}
+.link:hover {
+    text-decoration: underline;
+}
+.card {
+  max-width: 1000px;
+  width: 100vw;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-md);
+  margin-top: 1em;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #28166f;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin: 0 0 2.5rem;
+  line-height: 1.5;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 1em 0.25em;
+  color: var(--color-text);
+}
+
+.sectionSubtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1rem;
+}
+
+.icon {
+    margin-right: 0.5em;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.listItem {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr;
+  gap: 1rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  align-items: center;
+  transition: var(--transition);
+}
+
+.listItem:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+.itemName {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.itemContact {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.itemPhone {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.itemPhone:hover {
+  text-decoration: underline;
+}
+
+.departmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.departmentCard {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  transition: var(--transition);
+}
+
+.departmentCard:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.deptName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  color: var(--color-text);
+}
+
+.deptContact {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.3rem;
+}
+
+.deptPhone {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.deptPhone:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .listItem {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+    padding: 0.75rem;
+  }
+
+  .itemName {
+    font-weight: 600;
+  }
+
+  .itemContact {
+    font-size: 0.8rem;
+  }
+
+  .itemPhone {
+    font-size: 0.85rem;
+  }
+
+  .departmentsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.1rem;
+  }
+
+  .departmentCard {
+    padding: 0.75rem 1rem;
+  }
+}
