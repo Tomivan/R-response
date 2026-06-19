@@ -1,6 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import Dashboard from '../../../../public/images/dashboard.svg';
+import Analytics from '../../../../public/images/analytics.svg';
+import Admin from '../../../../public/images/admins.svg';
+import Bell from '../../../../public/images/notification.svg';
 import styles from './sidebar.module.css';
 
 interface SidebarProps {
@@ -9,55 +15,50 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen = true, onToggle }: SidebarProps) {
-  const [activeItem, setActiveItem] = useState('Dashboard');
+  const pathname = usePathname();
 
   const menuItems = [
-    { label: 'Dashboard', icon: '📊' },
-    { label: 'Map View', icon: '🗺️' },
-    { label: 'Dispatch', icon: '📡' },
-    { label: 'Analytics', icon: '📈' },
-    { label: 'Audit Logs', icon: '📋' },
+    { label: 'Dashboard', icon: Dashboard, href: '/dashboard' },
+    { label: 'Analytics', icon: Analytics, href: '/analytics' },
+    { label: 'Admins', icon: Admin, href: '/admins' },
+    { label: 'Notifications', icon: Bell, href: '/notifications' }
   ];
 
   return (
     <>
       <div className={`${styles.sidebar} ${!isOpen ? styles.collapsed : ''}`}>
         <div className={styles.header}>
-          <div className={styles.logo}>
-            <span className={styles.logoIcon}>🏛️</span>
-            <span className={styles.logoText}>City Sentinel</span>
-          </div>
-          <div className={styles.department}>
-            <span className={styles.deptName}>Department of Safety</span>
-            <span className={styles.deptSub}>Incident Command</span>
-          </div>
+          <Link href="/" className={styles.logo}>
+            <span className={styles.logoText}>R-Response</span>
+          </Link>
         </div>
 
         <nav className={styles.nav}>
-          {menuItems.map((item) => (
-            <button
-              key={item.label}
-              className={`${styles.navItem} ${activeItem === item.label ? styles.active : ''}`}
-              onClick={() => setActiveItem(item.label)}
-            >
-              <span className={styles.navIcon}>{item.icon}</span>
-              <span className={styles.navLabel}>{item.label}</span>
-            </button>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href || 
+              (item.href !== '/' && pathname?.startsWith(item.href));
+            
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+              >
+                <span className={styles.navIcon}>
+                  <Image 
+                    src={item.icon} 
+                    alt={item.label} 
+                    width={20} 
+                    height={20} 
+                  />
+                </span>
+                <span className={styles.navLabel}>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className={styles.divider} />
-
-        <button className={styles.reportBtn}>
-          <span className={styles.reportIcon}>➕</span>
-          <span className={styles.reportLabel}>Report New Incident</span>
-        </button>
-
         <div className={styles.footer}>
-          <div className={styles.systemStatus}>
-            <span className={styles.statusDot}></span>
-            <span className={styles.statusLabel}>System Status</span>
-          </div>
           <button className={styles.logoutBtn}>
             <span className={styles.logoutIcon}>🚪</span>
             <span className={styles.logoutLabel}>Logout</span>

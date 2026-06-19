@@ -21,50 +21,19 @@
 .header {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.logoIcon {
-  font-size: 1.5rem;
+  text-decoration: none;
 }
 
 .logoText {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-text);
-}
-
-.department {
-  display: flex;
-  flex-direction: column;
-}
-
-.deptName {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-text-muted);
-}
-
-.deptSub {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
+  color: #28166f;
 }
 
 .navItem {
@@ -80,6 +49,7 @@
   transition: var(--transition);
   width: 100%;
   font-size: 0.9rem;
+  text-decoration: none;
 }
 
 .navItem:hover {
@@ -93,47 +63,28 @@
 }
 
 .navIcon {
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
-  text-align: center;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.navItem:hover .navIcon {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(89%) saturate(2141%) hue-rotate(240deg) brightness(94%) contrast(92%);
+}
+
+.navItem.active .navIcon {
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+
+.navItem.active:hover .navIcon {
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
 }
 
 .navLabel {
   font-weight: 500;
-}
-
-.divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: 1rem 0;
-}
-
-.reportBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: var(--transition);
-  font-weight: 500;
-  width: 100%;
-  margin-bottom: 1.5rem;
-}
-
-.reportBtn:hover {
-  background: var(--color-primary-hover);
-}
-
-.reportIcon {
-  font-size: 1.1rem;
-}
-
-.reportLabel {
-  font-size: 0.9rem;
 }
 
 .footer {
@@ -143,23 +94,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.systemStatus {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--color-surface-muted);
-  border-radius: var(--radius-sm);
-}
-
-.statusDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-success);
-  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {

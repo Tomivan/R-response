@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Sidebar from '../sidebar/sidebar';
 import Topbar from '../topbar/topbar';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import IncidentIcon from '../../../../public/images/incident.svg';
 import Active from '../../../../public/images/active.svg';
 import Resolved from '../../../../public/images/resolved.svg';
@@ -14,7 +15,7 @@ interface Incident {
   id: string;
   type: string;
   department: string;
-  status: 'Open' | 'In-Progress' | 'Resolved' | 'Closed';
+  status: 'Open' | 'In-Progress' | 'Resolved';
   timestamp: string;
 }
 
@@ -22,35 +23,28 @@ const incidents: Incident[] = [
   {
     id: '#INC-4821',
     type: 'Structure Fire',
-    department: 'Fire Rescue',
+    department: 'Fire Department',
     status: 'Open',
     timestamp: '14:32:01',
   },
   {
     id: '#INC-4828',
     type: 'Traffic Collision',
-    department: 'Police Dept',
+    department: 'Security Department',
     status: 'In-Progress',
     timestamp: '14:28:45',
   },
   {
     id: '#INC-4819',
     type: 'Medical Assistance',
-    department: 'EMS Unit 4',
+    department: 'Health Centre',
     status: 'Resolved',
     timestamp: '14:15:22',
   },
-  {
-    id: '#INC-4818',
-    type: 'Gas Leak Reported',
-    department: 'Public Works',
-    status: 'Open',
-    timestamp: '14:18:05',
-  },
 ];
 
-const departments = ['All', 'Fire Rescue', 'Police Dept', 'EMS Unit 4', 'Public Works'];
-const statusOptions = ['All', 'Open', 'In-Progress', 'Resolved', 'Closed'];
+const departments = ['All', 'Fire Department', 'Security Department', 'Health Centre', 'Sanitation', 'Electrical', 'Water Management', 'Code of Conduct'];
+const statusOptions = ['All', 'Open', 'In-Progress', 'Resolved'];
 
 const getStatusClass = (status: string) => {
   switch (status) {
@@ -72,6 +66,8 @@ export default function IncidentDashboard() {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+   const router = useRouter();
   
   const totalPages = 11;
 
@@ -131,6 +127,13 @@ export default function IncidentDashboard() {
             <span className={styles.statLabel}>RESOLVED</span>
             <span className={styles.statValue}>1,242</span>
           </div>
+        </div>
+
+        <div className={styles.flexEnd}>
+            <button className={styles.reportBtn} onClick={() => router.push('/report-incident')}>
+            <span className={styles.reportIcon}>➕</span>
+            <span className={styles.reportLabel}>Report New Incident</span>
+            </button>
         </div>
 
         <div className={styles.tableSection}>
