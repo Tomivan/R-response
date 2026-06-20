@@ -12,7 +12,7 @@ import AlertTriangle from '../../../public/images/alert.svg';
 import styles from './home.module.css';
 import Link from 'next/link';
 
-export default function EmergencyContactDirectory() {
+export default function HomePage() {
     const year = new Date().getFullYear()
   return (
     <div className={styles.container}>

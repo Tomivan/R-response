@@ -1,29 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '@/app/providers/ThemeProvider';
 import Sidebar from '../components/sidebar/sidebar';
 import Topbar from '../components/topbar/topbar';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
-  const [theme, setTheme] = useState('light');
   const [formData, setFormData] = useState({
     fullName: 'Alexander Sterling',
     department: 'Emergency Dispatch',
     email: 'a.sterling@cityhall.gov',
     employeeId: 'RS-7729-EC',
   });
-
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -36,12 +30,6 @@ export default function SettingsPage() {
 
   const handleResetPassword = () => {
     router.push('/reset-password');
-  };
-
-  const handleThemeChange = (selectedTheme: string) => {
-    setTheme(selectedTheme);
-    document.documentElement.setAttribute('data-theme', selectedTheme);
-    localStorage.setItem('theme', selectedTheme);
   };
 
   return (
@@ -85,7 +73,6 @@ export default function SettingsPage() {
                   </div>
 
                   <div className={styles.profileLayout}>
-                    {/* Avatar */}
                     <div className={styles.avatarSection}>
                       <div className={styles.avatarPlaceholder}>
                         <span className={styles.avatarText}>AS</span>
@@ -181,7 +168,7 @@ export default function SettingsPage() {
                   <div className={styles.themeOptions}>
                     <div 
                       className={`${styles.themeCard} ${theme === 'light' ? styles.themeActive : ''}`}
-                      onClick={() => handleThemeChange('light')}
+                      onClick={() => setTheme('light')}
                     >
                       <div className={styles.themePreview}>
                         <div className={styles.lightPreview}>
@@ -203,7 +190,7 @@ export default function SettingsPage() {
 
                     <div 
                       className={`${styles.themeCard} ${theme === 'dark' ? styles.themeActive : ''}`}
-                      onClick={() => handleThemeChange('dark')}
+                      onClick={() => setTheme('dark')}
                     >
                       <div className={styles.themePreview}>
                         <div className={styles.darkPreview}>

@@ -5,6 +5,9 @@ import Sidebar from '../sidebar/sidebar';
 import Topbar from '../topbar/topbar';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '../../../../store/authStore';
+import { useIncidentStore } from '../../../../store/incidentStore';
+import { incidentService } from '../../../../firebase/services/incidentServices';
 import IncidentIcon from '../../../../public/images/incident.svg';
 import Active from '../../../../public/images/active.svg';
 import Resolved from '../../../../public/images/resolved.svg';
@@ -17,31 +20,11 @@ interface Incident {
   department: string;
   status: 'Open' | 'In-Progress' | 'Resolved';
   timestamp: string;
+  description?: string;
+  priority: string;
+  location?: string;
+  createdAt?: any;
 }
-
-const incidents: Incident[] = [
-  {
-    id: '#INC-4821',
-    type: 'Structure Fire',
-    department: 'Fire Department',
-    status: 'Open',
-    timestamp: '14:32:01',
-  },
-  {
-    id: '#INC-4828',
-    type: 'Traffic Collision',
-    department: 'Security Department',
-    status: 'In-Progress',
-    timestamp: '14:28:45',
-  },
-  {
-    id: '#INC-4819',
-    type: 'Medical Assistance',
-    department: 'Health Centre',
-    status: 'Resolved',
-    timestamp: '14:15:22',
-  },
-];
 
 const departments = ['All', 'Fire Department', 'Security Department', 'Health Centre', 'Sanitation', 'Electrical', 'Water Management', 'Code of Conduct'];
 const statusOptions = ['All', 'Open', 'In-Progress', 'Resolved'];
@@ -60,20 +43,48 @@ const getStatusClass = (status: string) => {
 };
 
 export default function IncidentDashboard() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  const { incidents, setIncidents, isLoading } = useIncidentStore();
+  
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDepartment, setSelectedDepartment] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-   const router = useRouter();
   
   const totalPages = 11;
+  const isAdmin = user?.role === 'admin';
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  // Fetch incidents from Firebase
+  useEffect(() => {
+  const fetchIncidents = async () => {
+    try {
+      const fetchedIncidents = await incidentService.getIncidents();
+      const mappedIncidents: Incident[] = fetchedIncidents.map((item: any) => ({
+        id: item.id || '',
+        type: item.type || '',
+        department: item.department || '',
+        status: (item.status || 'Open') as 'Open' | 'In-Progress' | 'Resolved',
+        timestamp: item.timestamp || new Date().toLocaleTimeString(),
+        description: item.description || '',
+        priority: item.priority ? item.priority : 'MED',
+        location: item.location || '',
+        createdAt: item.createdAt,
+      }));
+      setIncidents(mappedIncidents);
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+    }
+  };
+  fetchIncidents();
+}, [setIncidents]);
+
 
   const filteredIncidents = incidents.filter(incident => {
     const matchDepartment = selectedDepartment === 'All' || incident.department === selectedDepartment;
@@ -81,9 +92,17 @@ export default function IncidentDashboard() {
     return matchDepartment && matchStatus;
   });
 
-  const handleAction = (incidentId: string, action: string) => {
-    console.log(`Incident ${incidentId}: ${action}`);
-    setOpenDropdown(null);
+  const handleAction = async (incidentId: string, action: string) => {
+    try {
+      await incidentService.updateIncident(incidentId, { status: action });
+      // Update local state
+      setIncidents(incidents.map(inc => 
+        inc.id === incidentId ? { ...inc, status: action as any } : inc
+      ));
+      setOpenDropdown(null);
+    } catch (error) {
+      console.error('Error updating incident:', error);
+    }
   };
 
   const toggleDropdown = (incidentId: string) => {
@@ -100,12 +119,16 @@ export default function IncidentDashboard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className={styles.dashboard}>
-      <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
+      {isAdmin && <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />}
       <Topbar onMenuToggle={toggleSidebar} />
       
-      <main className={`${styles.main} ${!sidebarOpen ? styles.fullWidth : ''}`}>
+      <main className={`${styles.main} ${!isAdmin || !sidebarOpen ? styles.fullWidth : ''}`}>
         <div className={styles.header}>
           <h1 className={styles.title}>Incident Overview</h1>
           <p className={styles.subtitle}>Real-time command and control center for city-wide alerts.</p>
@@ -113,27 +136,27 @@ export default function IncidentDashboard() {
 
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <Image src={IncidentIcon} alt="a triangle with an exclamation in the middle" width={30} height={30} className={styles.icon}/>
+            <Image src={IncidentIcon} alt="Total Incidents" width={30} height={30} className={styles.icon}/>
             <span className={styles.statLabel}>TOTAL INCIDENTS</span>
-            <span className={styles.statValue}>1,284</span>
+            <span className={styles.statValue}>{incidents.length}</span>
           </div>
           <div className={styles.statCard}>
-            <Image src={Active} alt="a triangle with an exclamation in the middle" width={30} height={30} className={styles.icon}/>
+            <Image src={Active} alt="Active Incidents" width={30} height={30} className={styles.icon}/>
             <span className={styles.statLabel}>ACTIVE</span>
-            <span className={styles.statValue}>42</span>
+            <span className={styles.statValue}>{incidents.filter(i => i.status === 'Open' || i.status === 'In-Progress').length}</span>
           </div>
           <div className={styles.statCard}>
-            <Image src={Resolved} alt="a triangle with an exclamation in the middle" width={30} height={30} className={styles.icon}/>
+            <Image src={Resolved} alt="Resolved Incidents" width={30} height={30} className={styles.icon}/>
             <span className={styles.statLabel}>RESOLVED</span>
-            <span className={styles.statValue}>1,242</span>
+            <span className={styles.statValue}>{incidents.filter(i => i.status === 'Resolved').length}</span>
           </div>
         </div>
 
         <div className={styles.flexEnd}>
-            <button className={styles.reportBtn} onClick={() => router.push('/report-incident')}>
+          <button className={styles.reportBtn} onClick={() => router.push('/report-incident')}>
             <span className={styles.reportIcon}>➕</span>
             <span className={styles.reportLabel}>Report New Incident</span>
-            </button>
+          </button>
         </div>
 
         <div className={styles.tableSection}>
@@ -176,61 +199,77 @@ export default function IncidentDashboard() {
                   <th>DEPARTMENT</th>
                   <th>STATUS</th>
                   <th>TIMESTAMP</th>
-                  <th>ACTIONS</th>
+                  {isAdmin && <th>ACTIONS</th>}
                 </tr>
               </thead>
               <tbody>
-                {filteredIncidents.map((incident) => (
-                  <tr key={incident.id}>
-                    <td className={styles.incidentId}>{incident.id}</td>
-                    <td>{incident.type}</td>
-                    <td>{incident.department}</td>
-                    <td>
-                      <span className={`${styles.statusBadge} ${getStatusClass(incident.status)}`}>
-                        {incident.status}
-                      </span>
-                    </td>
-                    <td>{incident.timestamp}</td>
-                    <td>
-                      <div className={styles.actionWrapper} ref={openDropdown === incident.id ? dropdownRef : null}>
-                        <button 
-                          className={styles.actionEyeBtn}
-                          onClick={() => toggleDropdown(incident.id)}
-                        >
-                          <Image src={Eye} alt="a triangle with an exclamation in the middle" width={20} height={20} />
-                        </button>
-                        {openDropdown === incident.id && (
-                          <div className={styles.dropdownMenu}>
-                            <button 
-                              className={styles.dropdownItem}
-                              onClick={() => handleAction(incident.id, 'Open')}
-                            >
-                              Open
-                            </button>
-                            <button 
-                              className={styles.dropdownItem}
-                              onClick={() => handleAction(incident.id, 'In-Progress')}
-                            >
-                              In-Progress
-                            </button>
-                            <button 
-                              className={styles.dropdownItem}
-                              onClick={() => handleAction(incident.id, 'Resolved')}
-                            >
-                              Resolved
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 6 : 5} className={styles.loadingCell}>
+                      Loading incidents...
                     </td>
                   </tr>
-                ))}
+                ) : filteredIncidents.length === 0 ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 6 : 5} className={styles.emptyCell}>
+                      No incidents found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredIncidents.map((incident) => (
+                    <tr key={incident.id}>
+                      <td className={styles.incidentId}>{incident.id}</td>
+                      <td>{incident.type}</td>
+                      <td>{incident.department}</td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${getStatusClass(incident.status)}`}>
+                          {incident.status}
+                        </span>
+                      </td>
+                      <td>{incident.timestamp}</td>
+                      {isAdmin && (
+                        <td>
+                          <div className={styles.actionWrapper} ref={openDropdown === incident.id ? dropdownRef : null}>
+                            <button 
+                              className={styles.actionEyeBtn}
+                              onClick={() => toggleDropdown(incident.id)}
+                            >
+                              <Image src={Eye} alt="Actions" width={20} height={20} />
+                            </button>
+                            {openDropdown === incident.id && (
+                              <div className={styles.dropdownMenu}>
+                                <button 
+                                  className={styles.dropdownItem}
+                                  onClick={() => handleAction(incident.id, 'Open')}
+                                >
+                                  Open
+                                </button>
+                                <button 
+                                  className={styles.dropdownItem}
+                                  onClick={() => handleAction(incident.id, 'In-Progress')}
+                                >
+                                  In-Progress
+                                </button>
+                                <button 
+                                  className={styles.dropdownItem}
+                                  onClick={() => handleAction(incident.id, 'Resolved')}
+                                >
+                                  Resolved
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           <div className={styles.tableFooter}>
-            <span className={styles.footerText}>Showing {filteredIncidents.length} of 42 reported incidents</span>
+            <span className={styles.footerText}>Showing {filteredIncidents.length} of {incidents.length} reported incidents</span>
             <div className={styles.pagination}>
               <button 
                 className={`${styles.pageBtn} ${currentPage === 1 ? styles.pageDisabled : ''}`}

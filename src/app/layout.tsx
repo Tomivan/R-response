@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from './providers/ThemeProvider';
+import { FirebaseProvider } from '../../firebase/firebaseProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeProvider>
-          {children}
+          <FirebaseProvider>
+            {children}
+          </FirebaseProvider>
         </ThemeProvider>
       </body>
     </html>
