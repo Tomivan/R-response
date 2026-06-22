@@ -13,7 +13,6 @@ interface NotificationData {
   title: string;
   message: string;
   type: string;
-  priority: string;
   sentBy: string;
   sentByUid?: string;
   recipients?: Array<{ uid: string; email: string; name: string }>;
@@ -51,7 +50,6 @@ export default function AllNotificationsPage() {
             title: notif.title || 'New Notification',
             message: notif.message || notif.description || '',
             type: notif.type || 'system',
-            priority: notif.priority || 'normal',
             sentBy: notif.sentBy || 'System',
             sentByUid: notif.sentByUid || '',
             recipients: notif.recipients || [],
@@ -67,7 +65,6 @@ export default function AllNotificationsPage() {
             title: notif.title || 'New Notification',
             message: notif.message || notif.description || '',
             type: notif.type || 'system',
-            priority: notif.priority || 'normal',
             sentBy: notif.sentBy || 'System',
             sentByUid: notif.sentByUid || '',
             recipients: notif.recipients || [],
@@ -169,7 +166,6 @@ export default function AllNotificationsPage() {
                 >
                   <div className={styles.notificationHeader}>
                     <span className={styles.notificationType}>{notification.type}</span>
-                    <span className={styles.notificationPriority}>{notification.priority}</span>
                     <span className={styles.notificationTime}>
                       {new Date(notification.createdAt).toLocaleString()}
                     </span>

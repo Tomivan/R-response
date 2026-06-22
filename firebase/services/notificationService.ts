@@ -18,7 +18,6 @@ import {
 interface Notification {
   id?: string;
   type: string;
-  priority: string;
   title: string;
   message: string;
   sentBy: string;

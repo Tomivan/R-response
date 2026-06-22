@@ -119,24 +119,6 @@
   color: var(--color-text-muted);
 }
 
-.notificationPriority {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  padding: 0.15rem 0.6rem;
-  border-radius: 12px;
-}
-
-.notificationPriority:contains('urgent') {
-  background: #fee2e2;
-  color: var(--color-error);
-}
-
-.notificationPriority:contains('high') {
-  background: #fef3c7;
-  color: var(--color-warning);
-}
-
 .notificationTime {
   font-size: 0.75rem;
   color: var(--color-text-muted);
