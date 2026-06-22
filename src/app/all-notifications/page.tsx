@@ -6,7 +6,7 @@ import Sidebar from '../components/sidebar/sidebar';
 import Topbar from '../components/topbar/topbar';
 import { useAuthStore } from '../../../store/authStore';
 import { notificationService } from '../../../firebase/services/notificationService';
-import styles from './page.module.css';
+import styles from './all-notifications.module.css';
 
 interface NotificationData {
   id: string;
