@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import NewPassword from '../../../../../public/images/new-password.svg';
 import { authService } from '../../../../../firebase/services/authService';
-import showAlert from '../../../../../utils/alert'
+import showAlert from '../../../../../utils/alert';
 import styles from './set-new-password.module.css';
 
-export default function SetNewPassword() {
+export default function SetNewPasswordClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState('');
