@@ -133,7 +133,62 @@
   flex: 2;
 }
 
-/* Responsive */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #fee2e2;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  color: #991b1b;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.errorIcon {
+  font-size: 1rem;
+}
+
+.statusOptions {
+  display: flex;
+  gap: 2rem;
+  padding: 0.5rem 0;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.radioLabel input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.radioLabel input[type="radio"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.input:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .main {
     margin-left: 0;

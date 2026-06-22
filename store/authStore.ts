@@ -19,11 +19,12 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
+  isAdmin: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
-    persist(
-    (set) => ({
+  persist(
+    (set, get) => ({
       user: null,
       isLoading: false,
       isAuthenticated: false,
@@ -39,6 +40,10 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (data) => set((state) => ({
         user: state.user ? { ...state.user, ...data } : null
       })),
+      isAdmin: () => {
+        const user = get().user;
+        return user?.role === 'admin';
+      },
     }),
     {
       name: 'auth-storage',

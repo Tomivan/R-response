@@ -1,35 +1,99 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/app/providers/ThemeProvider';
 import Sidebar from '../components/sidebar/sidebar';
 import Topbar from '../components/topbar/topbar';
+import { useAuthStore } from '../../../store/authStore';
+import { authService } from '../../../firebase/services/authService';
+import { userService } from '../../../firebase/services/userService';
+import showAlert from '../../../utils/alert';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { user, updateUser } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: 'Alexander Sterling',
-    department: 'Emergency Dispatch',
-    email: 'a.sterling@cityhall.gov',
-    employeeId: 'RS-7729-EC',
+    fullName: '',
+    department: '',
+    email: '',
+    employeeId: '',
+    phone: '',
   });
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const handleSaveProfile = () => {
-    console.log('Profile saved:', formData);
-    alert('Profile changes saved successfully!');
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const userData = await authService.getUserData(user.uid);
+        if (userData) {
+          setFormData({
+            fullName: userData.fullName || user.displayName || '',
+            department: userData.department || '',
+            email: userData.email || user.email || '',
+            employeeId: userData.employeeId || '',
+            phone: userData.phone || '',
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        showAlert.error('Failed to load profile data.');
+      }
+    };
+
+    fetchUserData();
+  }, [user?.uid, user?.displayName, user?.email]);
+
+  const handleSaveProfile = async () => {
+    if (!user?.uid) {
+      showAlert.error('User not authenticated.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await userService.updateUser(user.uid, {
+        name: formData.fullName,
+        department: formData.department,
+        phone: formData.phone,
+        updatedAt: new Date().toISOString(),
+      });
+
+      // Update the auth store with new user data
+      updateUser({
+        displayName: formData.fullName,
+        department: formData.department,
+        phoneNumber: formData.phone,
+      });
+
+      showAlert.success('✅ Profile changes saved successfully!');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      showAlert.error('Failed to save profile changes. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResetPassword = () => {
     router.push('/reset-password');
+  };
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    showAlert.success(`🌓 Theme switched to ${newTheme} mode!`);
   };
 
   return (
@@ -75,7 +139,9 @@ export default function SettingsPage() {
                   <div className={styles.profileLayout}>
                     <div className={styles.avatarSection}>
                       <div className={styles.avatarPlaceholder}>
-                        <span className={styles.avatarText}>AS</span>
+                        <span className={styles.avatarText}>
+                          {formData.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </span>
                       </div>
                       <span className={styles.avatarLabel}>PUBLIC AVATAR</span>
                     </div>
@@ -89,6 +155,7 @@ export default function SettingsPage() {
                             className="input"
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                            disabled={isLoading}
                           />
                         </div>
                         <div className={styles.fieldGroup}>
@@ -98,6 +165,7 @@ export default function SettingsPage() {
                             className="input"
                             value={formData.department}
                             onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                            disabled={isLoading}
                           />
                         </div>
                       </div>
@@ -109,6 +177,7 @@ export default function SettingsPage() {
                             className="input"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            disabled={true}
                           />
                         </div>
                         <div className={styles.fieldGroup}>
@@ -118,6 +187,19 @@ export default function SettingsPage() {
                             className="input"
                             value={formData.employeeId}
                             onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+                      <div className={styles.fieldRow}>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>Phone Number</label>
+                          <input
+                            type="tel"
+                            className="input"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            disabled={isLoading}
                           />
                         </div>
                       </div>
@@ -143,12 +225,14 @@ export default function SettingsPage() {
                     <button 
                       className={`button-primary ${styles.saveBtn}`}
                       onClick={handleSaveProfile}
+                      disabled={isLoading}
                     >
-                      Save Profile Changes
+                      {isLoading ? 'Saving...' : 'Save Profile Changes'}
                     </button>
                     <button 
                       className={`button-secondary ${styles.resetBtn}`}
                       onClick={handleResetPassword}
+                      disabled={isLoading}
                     >
                       Reset Password
                     </button>
@@ -168,7 +252,7 @@ export default function SettingsPage() {
                   <div className={styles.themeOptions}>
                     <div 
                       className={`${styles.themeCard} ${theme === 'light' ? styles.themeActive : ''}`}
-                      onClick={() => setTheme('light')}
+                      onClick={() => handleThemeChange('light')}
                     >
                       <div className={styles.themePreview}>
                         <div className={styles.lightPreview}>
@@ -190,7 +274,7 @@ export default function SettingsPage() {
 
                     <div 
                       className={`${styles.themeCard} ${theme === 'dark' ? styles.themeActive : ''}`}
-                      onClick={() => setTheme('dark')}
+                      onClick={() => handleThemeChange('dark')}
                     >
                       <div className={styles.themePreview}>
                         <div className={styles.darkPreview}>

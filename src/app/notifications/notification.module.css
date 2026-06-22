@@ -162,7 +162,75 @@
   color: var(--color-text-muted);
 }
 
-/* Actions */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #fee2e2;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  color: #991b1b;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.errorIcon {
+  font-size: 1rem;
+}
+
+.successMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #dcfce7;
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-sm);
+  color: #166534;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.successIcon {
+  font-size: 1rem;
+}
+
+.recipientInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  margin-top: 0.5rem;
+}
+
+.recipientLabel {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.recipientCount {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .actions {
   display: flex;
   gap: 1rem;

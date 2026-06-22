@@ -1,16 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import NewPassword from '../../../../../public/images/new-password.svg';
+import { authService } from '../../../../../firebase/services/authService';
+import showAlert from '../../../../../utils/alert'
 import styles from './set-new-password.module.css';
 
 export default function SetNewPassword() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [oobCode, setOobCode] = useState('');
+
+  // Extract the oobCode from URL parameters
+  useEffect(() => {
+    const code = searchParams.get('oobCode');
+    if (code) {
+      setOobCode(code);
+    } else {
+      // If no code, redirect to reset password page
+      showAlert.warning('Invalid reset link. Please request a new one.');
+      router.push('/reset-password');
+    }
+  }, [router, searchParams]);
 
   const getPasswordStrength = (pwd: string): string => {
     if (!pwd) return '';
@@ -28,11 +47,75 @@ export default function SetNewPassword() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle password update logic here
-    console.log('Password updated successfully');
-    router.push('/login');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      // Validate password
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters long.');
+        showAlert.error('Password must be at least 8 characters long.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        showAlert.error('Passwords do not match.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate oobCode
+      if (!oobCode) {
+        setError('Invalid reset link. Please request a new one.');
+        showAlert.error('Invalid reset link. Please request a new one.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Confirm the password reset with Firebase
+      await authService.confirmPasswordReset(oobCode, password);
+      
+      setSuccess(true);
+      showAlert.success('Password reset successfully! 🎉 Redirecting to login...');
+
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+
+      let errorMessage = 'Failed to reset password. Please try again.';
+      
+      switch (error.code) {
+        case 'auth/expired-action-code':
+          errorMessage = 'The reset link has expired. Please request a new one.';
+          break;
+        case 'auth/invalid-action-code':
+          errorMessage = 'Invalid reset link. Please request a new one.';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled. Please contact support.';
+          break;
+        case 'auth/user-not-found':
+          errorMessage = 'User not found. Please request a new reset link.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password is too weak. Use at least 8 characters with numbers and symbols.';
+          break;
+        default:
+          errorMessage = 'Failed to reset password. Please try again.';
+      }
+      
+      setError(errorMessage);
+      showAlert.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const passwordStrength = getPasswordStrength(password);
@@ -48,6 +131,20 @@ export default function SetNewPassword() {
           </p>
         </div>
 
+        {error && (
+          <div className={styles.errorMessage}>
+            <span className={styles.errorIcon}>⚠️</span>
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className={styles.successMessage}>
+            <span className={styles.successIcon}>✅</span>
+            Password reset successfully! Redirecting to login...
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>New Password</label>
@@ -58,12 +155,14 @@ export default function SetNewPassword() {
                 placeholder="Enter new password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading || success || !oobCode}
                 required
               />
               <button
                 type="button"
                 className={styles.togglePassword}
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading || success}
               >
                 {showPassword ? '👁️' : '👁️‍🗨️'}
               </button>
@@ -90,12 +189,17 @@ export default function SetNewPassword() {
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading || success || !oobCode}
               required
             />
           </div>
 
-          <button type="submit" className="button-primary">
-            Update Password
+          <button 
+            type="submit" 
+            className="button-primary"
+            disabled={isLoading || success || !oobCode}
+          >
+            {isLoading ? 'Updating...' : 'Update Password'}
           </button>
         </form>
 
@@ -103,6 +207,7 @@ export default function SetNewPassword() {
           <button 
             className={styles.backLink}
             onClick={() => router.push('/login')}
+            disabled={isLoading}
           >
             ← Back to sign in
           </button>

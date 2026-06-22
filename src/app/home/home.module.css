@@ -251,6 +251,41 @@
   justify-content: center;
 }
 
+
+.phoneNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.phoneLink {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.phoneLink:hover {
+  text-decoration: underline;
+  color: var(--color-primary-hover);
+}
+
+.callButtonLink {
+  display: block;
+  text-decoration: none;
+  width: 100%;
+  margin-top: auto;
+}
+
+.callButtonLink .callBtn {
+  width: 100%;
+}
+
 .loginBtn,
 .credentialsBtn {
   display: flex;

@@ -275,9 +275,147 @@
   background: var(--color-surface-muted);
 }
 
+.successMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #dcfce7;
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-sm);
+  color: #166534;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.successIcon {
+  font-size: 1rem;
+}
+
+.codeDigit {
+  width: 48px;
+  height: 54px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.codeDigit:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(40, 22, 111, 0.15);
+}
+
+.codeDigit.codeError {
+  border-color: var(--color-error);
+  background: #fee2e2;
+}
+
+.codeDigit.codeSuccess {
+  border-color: var(--color-success);
+  background: #dcfce7;
+}
+
+.codeDigit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.resendRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.resendText {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resendLink {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.resendLink:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.resendLink:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resendCountdown {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.loadingState {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.statusItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.statusLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.statusValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.statusPending {
+  color: var(--color-warning);
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 1.5rem;
+  }
+
+  .codeDigit {
+    width: 40px;
+    height: 48px;
+    font-size: 1.2rem;
   }
 
   .statusGrid {

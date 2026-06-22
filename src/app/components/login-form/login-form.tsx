@@ -10,6 +10,7 @@ import Message from '../../../../public/images/messages.svg';
 import Eye from '../../../../public/images/eye.svg';
 import { useAuthStore } from '../../../../store/authStore';
 import { authService } from '../../../../firebase/services/authService';
+import showAlert from '../../../../utils/alert';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,7 +30,9 @@ export default function LoginPage() {
 
     try {
       if (!email || !password) {
-        setError('Please enter both email and password.');
+        const errorMsg = 'Please enter both email and password.';
+        setError(errorMsg);
+        showAlert.error(errorMsg);
         setIsLoading(false);
         setLoading(false);
         return;
@@ -38,34 +41,51 @@ export default function LoginPage() {
       const user = await authService.login(email, password);
       const role = await authService.getUserRole(user.uid);
 
+      const userRole = role === 'admin' ? 'admin' : 'user';
+
       setUser({
         uid: user.uid,
         email: user.email || '',
         displayName: user.displayName || '',
-        role: role,
+        role: userRole,
       });
 
-      router.push('/dashboard');
+      showAlert.success(`Welcome back, ${user.displayName || 'User'}! 🎉`);
+      
+      // Redirect to dashboard based on role
+      if (userRole === 'admin') {
+        router.push('/dashboard');
+      } else {
+        router.push('/');
+      }
       
     } catch (error: any) {
       console.error('Login error:', error);
       
+      let errorMsg = 'Failed to login. Please check your credentials.';
+      
       switch (error.code) {
         case 'auth/user-not-found':
-          setError('No account found with this email address.');
+          errorMsg = 'No account found with this email address.';
           break;
         case 'auth/wrong-password':
-          setError('Incorrect password. Please try again.');
+          errorMsg = 'Incorrect password. Please try again.';
           break;
         case 'auth/invalid-email':
-          setError('Invalid email address format.');
+          errorMsg = 'Invalid email address format.';
           break;
         case 'auth/too-many-requests':
-          setError('Too many failed attempts. Please try again later.');
+          errorMsg = 'Too many failed attempts. Please try again later.';
+          break;
+        case 'auth/user-disabled':
+          errorMsg = 'This account has been disabled. Please contact support.';
           break;
         default:
-          setError('Failed to login. Please check your credentials.');
+          errorMsg = 'Failed to login. Please check your credentials.';
       }
+      
+      setError(errorMsg);
+      showAlert.error(errorMsg);
     } finally {
       setIsLoading(false);
       setLoading(false);

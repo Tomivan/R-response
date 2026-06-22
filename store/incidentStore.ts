@@ -4,11 +4,13 @@ interface Incident {
   id: string;
   type: string;
   department: string;
-  priority: string;
   status: string;
   timestamp: string;
   description?: string;
   location?: string;
+  reportedBy?: string;
+  reportedByUid?: string;
+  createdAt?: string;
 }
 
 interface IncidentState {

@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '../components/sidebar/sidebar';
 import Topbar from '../components/topbar/topbar';
 import Image from 'next/image';
+import { useAuthStore } from '../../../store/authStore';
+import { useIncidentStore } from '../../../store/incidentStore';
+import { incidentService } from '../../../firebase/services/incidentServices';
+import showAlert from '../../../utils/alert';
 import IncidentDetails from '../../../public/images/incident-details.svg';
 import Classification from '../../../public/images/classification.svg';
 import Media from '../../../public/images/media.svg';
@@ -11,21 +16,79 @@ import Upload from '../../../public/images/upload.svg';
 import styles from './report-incident.module.css';
 
 export default function ReportIncidentPage() {
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const { addIncident } = useIncidentStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     department: 'Security Department',
-    priority: '',
   });
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setError('');
+    setIsLoading(true);
+
+    try {
+      if (!formData.title.trim()) {
+        const errorMsg = 'Please enter an incident title.';
+        setError(errorMsg);
+        showAlert.error(errorMsg);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!formData.description.trim()) {
+        const errorMsg = 'Please provide a description of the incident.';
+        setError(errorMsg);
+        showAlert.error(errorMsg);
+        setIsLoading(false);
+        return;
+      }
+      
+      const incidentData = {
+        type: formData.title,
+        description: formData.description,
+        department: formData.department,
+        status: 'Open' as const,
+        timestamp: new Date().toLocaleTimeString(),
+        reportedBy: user?.displayName || user?.email || 'Anonymous',
+        reportedByUid: user?.uid || '',
+        createdAt: new Date().toISOString(),
+      };
+
+      // Save to Firebase
+      const docId = await incidentService.createIncident(incidentData);
+      
+      // Update local store
+      addIncident({
+        id: docId,
+        ...incidentData,
+      });
+
+      showAlert.success('✅ Incident reported successfully! 🚨');
+      router.push('/');
+      
+    } catch (error: any) {
+      console.error('Error reporting incident:', error);
+      const errorMsg = 'Failed to report incident. Please try again.';
+      setError(errorMsg);
+      showAlert.error(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    router.push('/');
   };
 
   return (
@@ -41,12 +104,18 @@ export default function ReportIncidentPage() {
 
             <hr className={styles.divider} />
 
-            <form onSubmit={handleSubmit}>
+            {error && (
+              <div className={styles.errorMessage}>
+                <span className={styles.errorIcon}>⚠️</span>
+                {error}
+              </div>
+            )}
 
+            <form onSubmit={handleSubmit}>
               <section className={styles.section}>
                 <div className="flex">
-                    <Image src={IncidentDetails} alt='' width={30} height={30} className={styles.icon} />
-                    <h2 className={styles.sectionTitle}>Incident Details</h2>
+                  <Image src={IncidentDetails} alt='' width={30} height={30} className={styles.icon} />
+                  <h2 className={styles.sectionTitle}>Incident Details</h2>
                 </div>
                 
                 <div className={styles.formGroup}>
@@ -57,6 +126,7 @@ export default function ReportIncidentPage() {
                     placeholder="Brief summary of the issue (e.g., Water Main Break at 5th Ave)"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -69,6 +139,7 @@ export default function ReportIncidentPage() {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={5}
+                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -76,8 +147,8 @@ export default function ReportIncidentPage() {
 
               <section className={styles.section}>
                 <div className="flex">
-                    <Image src={Classification} alt='' width={30} height={30} className={styles.icon} />
-                    <h2 className={styles.sectionTitle}>Classification</h2>
+                  <Image src={Classification} alt='' width={30} height={30} className={styles.icon} />
+                  <h2 className={styles.sectionTitle}>Classification</h2>
                 </div>
                 
                 <div className={styles.formGroup}>
@@ -86,6 +157,7 @@ export default function ReportIncidentPage() {
                     className="input"
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    disabled={isLoading}
                   >
                     <option value="Security Department">Security Department</option>
                     <option value="Fire Department">Fire Department</option>
@@ -100,8 +172,8 @@ export default function ReportIncidentPage() {
 
               <section className={styles.section}>
                 <div className="flex">
-                    <Image src={Media} alt='' width={30} height={30} className={styles.icon} />
-                    <h2 className={styles.sectionTitle}>Media Assets</h2>
+                  <Image src={Media} alt='' width={30} height={30} className={styles.icon} />
+                  <h2 className={styles.sectionTitle}>Media Assets</h2>
                 </div>
                 
                 <div className={styles.formGroup}>
@@ -117,6 +189,7 @@ export default function ReportIncidentPage() {
                       accept=".jpg,.jpeg,.png,.mp4"
                       className={styles.uploadInput}
                       multiple
+                      disabled={isLoading}
                       onChange={(e) => {
                         if (e.target.files) {
                           console.log('Files selected:', e.target.files);
@@ -128,11 +201,20 @@ export default function ReportIncidentPage() {
               </section>
 
               <div className={styles.actions}>
-                <button type="button" className={`button-secondary ${styles.cancelBtn}`}>
+                <button 
+                  type="button" 
+                  className={`button-secondary ${styles.cancelBtn}`}
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                >
                   Cancel
                 </button>
-                <button type="submit" className={`button-primary ${styles.submitBtn}`}>
-                  Submit Report
+                <button 
+                  type="submit" 
+                  className={`button-primary ${styles.submitBtn}`}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Submitting...' : 'Submit Report'}
                 </button>
               </div>
             </form>

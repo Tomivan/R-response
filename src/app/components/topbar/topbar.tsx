@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useAuthStore } from '../../../../store/authStore';
+import { notificationService } from '../../../../firebase/services/notificationService';
 import Search from '../../../../public/images/search.svg';
 import Bell from '../../../../public/images/notification.svg';
 import HelpCircle from '../../../../public/images/faq.svg';
@@ -15,82 +17,127 @@ interface Notification {
   title: string;
   description: string;
   time: string;
-  type: 'incident' | 'assignment' | 'system';
+  type: 'incident' | 'assignment' | 'system' | 'general' | 'alert' | 'update' | 'maintenance' | 'training';
   read: boolean;
+  createdAt?: string;
+  sentBy?: string;
 }
-
-const notifications: Notification[] = [
-  {
-    id: '1',
-    title: 'New Incident: Structural Fire',
-    description: 'Reported at 14:42 Riverside Dr. Unit 14 and 1B dispatched to the scene. Smoke reported on 4th floor.',
-    time: '2h ago',
-    type: 'incident',
-    read: false,
-  },
-  {
-    id: '2',
-    title: 'Task Assigned: Unit 4B',
-    description: 'Officer Miller has been assigned to support perimeter security at the West Gate evacuation point.',
-    time: '15h ago',
-    type: 'assignment',
-    read: false,
-  },
-  {
-    id: '3',
-    title: 'System Backup Complete',
-    description: 'Nightly database synchronization and log backups finished successfully. 12:40B archived.',
-    time: '1h ago',
-    type: 'system',
-    read: false,
-  },
-  {
-    id: '4',
-    title: 'New Incident Report Available',
-    description: 'Incident ARC-8542-1 Summary is now ready for review and supervisor approval.',
-    time: '4h ago',
-    type: 'incident',
-    read: true,
-  },
-  {
-    id: '5',
-    title: 'Dispatch Delay: Zone 3',
-    description: 'Critical resource shortage in Northern District. Rerouting secondary units from Midtown station.',
-    time: '3h ago',
-    type: 'system',
-    read: true,
-  },
-];
 
 interface TopbarProps {
   onMenuToggle?: () => void;
 }
 
 export default function Topbar({ onMenuToggle }: TopbarProps) {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'incident' | 'assignment' | 'system'>('all');
-  const [notificationList, setNotificationList] = useState(notifications);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'incident' | 'assignment' | 'system' | 'general'>('all');
+  const [notificationList, setNotificationList] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const router = useRouter();
+  const isAdmin = user?.role === 'admin';
+
+  // Fetch notifications from Firebase
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!isAuthenticated || !user?.uid) return;
+      
+      try {
+        setIsLoading(true);
+        let fetchedNotifications = [];
+        
+        if (isAdmin) {
+          // Admin gets incident notifications only
+          const adminNotifications = await notificationService.getAdminNotifications(user.uid);
+          fetchedNotifications = adminNotifications;
+        } else {
+          // Regular users get all notifications
+          const userNotifications = await notificationService.getUserNotifications(user.uid);
+          fetchedNotifications = userNotifications;
+        }
+        
+        // Format notifications for display
+        const formattedNotifications = fetchedNotifications.slice(0, 3).map((notif: any) => ({
+          id: notif.id || '',
+          title: notif.title || 'New Notification',
+          description: notif.message || notif.description || '',
+          time: notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : 'Just now',
+          type: notif.type || 'system',
+          read: (notif.readBy || []).includes(user.uid),
+          createdAt: notif.createdAt,
+          sentBy: notif.sentBy,
+        }));
+        
+        setNotificationList(formattedNotifications);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, [isAuthenticated, user?.uid, isAdmin]);
+
+  // Listen for real-time notification updates
+  useEffect(() => {
+    if (!isAuthenticated || !user?.uid) return;
+
+    const unsubscribe = notificationService.listenForNotifications(
+      user.uid,
+      isAdmin,
+      (newNotifications) => {
+        const formatted = newNotifications.slice(0, 3).map((notif: any) => ({
+          id: notif.id || '',
+          title: notif.title || 'New Notification',
+          description: notif.message || notif.description || '',
+          time: notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : 'Just now',
+          type: notif.type || 'system',
+          read: (notif.readBy || []).includes(user.uid),
+          createdAt: notif.createdAt,
+          sentBy: notif.sentBy,
+        }));
+        setNotificationList(formatted);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isAuthenticated, user?.uid, isAdmin]);
 
   const toggleNotifications = () => {
     setIsNotificationsOpen(!isNotificationsOpen);
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotificationList(prev =>
-      prev.map(notification => ({ ...notification, read: true }))
-    );
+  const handleMarkAllAsRead = async () => {
+    try {
+      // Mark all as read in Firebase
+      for (const notification of notificationList) {
+        if (!notification.read) {
+          await notificationService.markAsRead(notification.id, user?.uid || '');
+        }
+      }
+      
+      setNotificationList(prev =>
+        prev.map(notification => ({ ...notification, read: true }))
+      );
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
   };
 
-  const handleMarkAsRead = (id: string) => {
-    setNotificationList(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id, user?.uid || '');
+      setNotificationList(prev =>
+        prev.map(notification =>
+          notification.id === id ? { ...notification, read: true } : notification
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
   const filteredNotifications = notificationList.filter(notification => {
@@ -109,6 +156,11 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <header className={styles.topbar}>
@@ -151,12 +203,14 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
                   <span className={styles.dropdownTitle}>Notifications</span>
                   <span className={styles.unreadCount}>{unreadCount} unread updates</span>
                 </div>
-                <button 
-                  className={styles.markAllRead}
-                  onClick={handleMarkAllAsRead}
-                >
-                  Mark all as read
-                </button>
+                {unreadCount > 0 && (
+                  <button 
+                    className={styles.markAllRead}
+                    onClick={handleMarkAllAsRead}
+                  >
+                    Mark all as read
+                  </button>
+                )}
               </div>
 
               <div className={styles.filterTabs}>
@@ -184,10 +238,18 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
                 >
                   System
                 </button>
+                <button
+                  className={`${styles.filterTab} ${activeFilter === 'general' ? styles.activeFilter : ''}`}
+                  onClick={() => setActiveFilter('general')}
+                >
+                  General
+                </button>
               </div>
 
               <div className={styles.notificationList}>
-                {filteredNotifications.length === 0 ? (
+                {isLoading ? (
+                  <div className={styles.emptyState}>Loading notifications...</div>
+                ) : filteredNotifications.length === 0 ? (
                   <div className={styles.emptyState}>No notifications</div>
                 ) : (
                   filteredNotifications.map((notification) => (
@@ -207,29 +269,37 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
               </div>
 
               <div className={styles.dropdownFooter}>
-                <button className={styles.viewAllBtn}>View All History</button>
+                <button 
+                  className={styles.viewAllBtn}
+                  onClick={() => {
+                    setIsNotificationsOpen(false);
+                    router.push('/all-notifications');
+                  }}
+                >
+                  View All Notifications
+                </button>
               </div>
             </div>
           )}
         </div>
 
         <button 
-            className={styles.iconBtn} 
-            aria-label="Help"
-            onClick={() => router.push('/help')}
+          className={styles.iconBtn} 
+          aria-label="Help"
+          onClick={() => router.push('/help')}
         >
-        <Image src={HelpCircle} alt="Help" className={styles.helpIcon} width={30} height={30} />
+          <Image src={HelpCircle} alt="Help" className={styles.helpIcon} width={30} height={30} />
         </button>
         <button 
-            className={styles.iconBtn} 
-            aria-label="Settings"
-            onClick={() => router.push('/settings')}
+          className={styles.iconBtn} 
+          aria-label="Settings"
+          onClick={() => router.push('/settings')}
         >
-            <Image src={Settings} alt="Settings" className={styles.settingsIcon} width={30} height={30} />
+          <Image src={Settings} alt="Settings" className={styles.settingsIcon} width={30} height={30} />
         </button>
         <button className={styles.userBtn}>
           <Image src={User} alt="User" className={styles.userIcon} width={30} height={30} />
-          <span className={styles.userName}>Admin</span>
+          <span className={styles.userName}>{user?.displayName || 'User'}</span>
         </button>
       </div>
     </header>

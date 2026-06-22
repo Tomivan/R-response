@@ -14,6 +14,11 @@ import Link from 'next/link';
 
 export default function HomePage() {
     const year = new Date().getFullYear()
+    
+    const fireDepartmentNumber = '+2347098213112';
+    const healthCentreNumber = '+23418447340';
+    const securityNumber = '993'
+
   return (
     <div className={styles.container}>
         <HomeNav />
@@ -56,11 +61,15 @@ export default function HomePage() {
               </div>
             </div>
             <div className={styles.phoneNumber}>
-              <p>+2347098213112</p>
+              <a href={`tel:${fireDepartmentNumber}`} className={styles.phoneLink}>
+                {fireDepartmentNumber}
+              </a>
             </div>
-            <button className={`button-primary ${styles.callBtn}`}>
-              CALL DEPARTMENT
-            </button>
+            <a href={`tel:${fireDepartmentNumber}`} className={styles.callButtonLink}>
+              <button className={`button-primary ${styles.callBtn}`}>
+                CALL DEPARTMENT
+              </button>
+            </a>
           </div>
 
           <div className={styles.contactCard}>
@@ -71,14 +80,18 @@ export default function HomePage() {
               </div>
             </div>
             <div className={styles.phoneNumber}>
-              <p>+2347098213112</p>
+              <a href={`tel:${healthCentreNumber}`} className={styles.phoneLink}>
+                {healthCentreNumber}
+              </a>
             </div>
             <p className={styles.emsDescription}>
               Direct ambulance dispatch across the campground.
             </p>
-            <button className={`button-primary ${styles.callBtn}`}>
-              CONTACT HEALTH CENTRE
-            </button>
+            <a href={`tel:${healthCentreNumber}`} className={styles.callButtonLink}>
+              <button className={`button-primary ${styles.callBtn}`}>
+                CONTACT HEALTH CENTRE
+              </button>
+            </a>
           </div>
 
           <div className={styles.contactCard}>
@@ -91,15 +104,19 @@ export default function HomePage() {
               </div>
             </div>
             <div className={styles.phoneNumber}>
-              <p>993</p>
+              <a href={`tel:${securityNumber}`} className={styles.phoneLink}>
+                {securityNumber}
+              </a>
             </div>
             <div className={styles.securityTip}>
               <Image src={AlertTriangle} alt="Safety Tip" className={styles.securityTipIcon} />
               <p>Safety Tip: Always verify official personnel ID cards before allowing entry during security audits.</p>
             </div>
-            <button className={`button-primary ${styles.callBtn}`}>
-              REQUEST OFFICER
-            </button>
+            <a href={`tel:${securityNumber}`} className={styles.callButtonLink}>
+              <button className={`button-primary ${styles.callBtn}`}>
+                REQUEST OFFICER
+              </button>
+            </a>
           </div>
         </div>
       </section>
