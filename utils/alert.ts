@@ -1,10 +1,10 @@
-import { coco_Alert } from 'coco-alert/react';
+import { toast } from 'sonner';
 
 export const showAlert = {
-  success: (message: string) => coco_Alert.success(message),
-  error: (message: string) => coco_Alert.error(message),
-  warning: (message: string) => coco_Alert.warning(message),
-  info: (message: string) => coco_Alert.info(message),
+  success: (message: string) => toast.success(message),
+  error: (message: string) => toast.error(message),
+  warning: (message: string) => toast.warning(message),
+  info: (message: string) => toast.info(message),
 };
 
 export default showAlert;
